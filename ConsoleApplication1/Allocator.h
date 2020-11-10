@@ -95,7 +95,6 @@ MyAllocator::block* MyAllocator::alloc_block(size_t size)
 	{
 		return NULL;
 	}
-
 	const auto block_ = new block();
 	block_->next = NULL;
 	block_->prev = NULL;
@@ -118,8 +117,12 @@ MyAllocator::block* MyAllocator::alloc_block(size_t size)
 
 void* MyAllocator::mem_realloc(void* addr, size_t size)
 {
+	size_t CurrSize = ((block*)addr)->size;
 	mem_free(addr);
-	return mem_alloc(size);
+	void* page = mem_alloc(size);
+	if (CurrSize < size)memcpy(page, addr, CurrSize);
+	else memcpy(page, addr, size);	
+	return page;
 }
 
 
@@ -181,9 +184,9 @@ void MyAllocator::mem_dump()
 		cout << "Видiлено пам'ятi: " << curr_block->size << endl;
 		cout << "Стан блоку: ";
 		if (contains_block(free_blocks, curr_block))
-			cout << "вiльний" << endl;
+			cout << "вiльний " << endl;
 		else if (contains_block(used_blocks, curr_block))
-			cout << "використовується" << endl;
+			cout << "використовується " << endl;
 
 		if (curr_block->next == NULL)
 			break;
